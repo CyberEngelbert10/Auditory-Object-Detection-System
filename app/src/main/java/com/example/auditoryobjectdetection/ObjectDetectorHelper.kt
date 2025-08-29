@@ -33,7 +33,7 @@ class ObjectDetectorHelper(
         val baseOptionsBuilder = BaseOptions.builder().setNumThreads(numThreads)
         optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
 
-        val modelName = "model.tflite"
+        val modelName = "model1.tflite"
 
         try {
             objectDetector =
