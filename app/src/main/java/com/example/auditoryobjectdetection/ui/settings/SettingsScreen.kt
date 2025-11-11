@@ -61,6 +61,31 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                     onCheckedChange = { viewModel.onHapticsToggle(it) }
                 )
             }
+
+            // Language Selection
+            Text("Language", style = MaterialTheme.typography.titleMedium)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("English")
+                RadioButton(
+                    selected = settings.language == "english",
+                    onClick = { viewModel.onLanguageChange("english") }
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Nyanja")
+                RadioButton(
+                    selected = settings.language == "nyanja",
+                    onClick = { viewModel.onLanguageChange("nyanja") }
+                )
+            }
         }
     }
 }

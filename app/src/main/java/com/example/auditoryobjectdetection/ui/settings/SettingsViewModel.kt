@@ -23,6 +23,11 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         val newSettings = settings.value.copy(hapticsEnabled = enabled)
         repository.saveSettings(newSettings)
     }
+
+    fun onLanguageChange(language: String) {
+        val newSettings = settings.value.copy(language = language)
+        repository.saveSettings(newSettings)
+    }
 }
 
 // Factory to create the ViewModel with its dependency

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.VibratorManager
+import android.media.MediaPlayer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -170,6 +171,21 @@ fun CameraView(
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     val vibrator = (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
 
+    // Map for Nyanja audio resources (add actual files to res/raw/nyanja/)
+    val nyanjaAudioMap = remember {
+        mapOf(
+            "person" to R.raw.nyanja_person,
+            "car" to R.raw.nyanja_car,
+            "bicycle" to R.raw.nyanja_bicycle,
+            "motorcycle" to R.raw.nyanja_motorcycle,
+            "bus" to R.raw.nyanja_bus,
+            "truck" to R.raw.nyanja_truck,
+            "chair" to R.raw.nyanja_chair,
+            "table" to R.raw.nyanja_table,
+            "obstacle" to R.raw.nyanja_obstacle
+        )
+    }
+
     // This is the corrected DisposableEffect block to manage the TTS engine lifecycle
     DisposableEffect(context) {
         var ttsInstance: TextToSpeech? = null
@@ -211,8 +227,25 @@ fun CameraView(
                     if (!results.isNullOrEmpty()) {
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastSpokenTime > 3000) {
-                            val speechText = "Object detected: " + results.map { it.categories.first().label }.distinct().joinToString()
-                            tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
+                            val detectedLabels = results.map { it.categories.first().label }.distinct()
+                            if (settings.language == "nyanja") {
+                                // Play audio for the first detected object
+                                val firstLabel = detectedLabels.firstOrNull()?.lowercase()
+                                val audioResId = nyanjaAudioMap[firstLabel]
+                                if (audioResId != null) {
+                                    val mediaPlayer = MediaPlayer.create(context, audioResId)
+                                    mediaPlayer?.start()
+                                    mediaPlayer?.setOnCompletionListener { it.release() }
+                                } else {
+                                    // Fallback to TTS if no audio
+                                    val speechText = "Object detected: " + detectedLabels.joinToString()
+                                    tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
+                                }
+                            } else {
+                                // English TTS
+                                val speechText = "Object detected: " + detectedLabels.joinToString()
+                                tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
+                            }
 
                             if (settings.hapticsEnabled) {
                                 vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
