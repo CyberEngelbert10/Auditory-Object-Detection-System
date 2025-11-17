@@ -3,6 +3,7 @@ package com.example.auditoryobjectdetection.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.auditoryobjectdetection.data.AppSettings
+import com.example.auditoryobjectdetection.data.Language
 import com.example.auditoryobjectdetection.data.SettingsRepository
 
 class SettingsViewModel(private val repository: SettingsRepository) : ViewModel() {
@@ -24,7 +25,7 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
         repository.saveSettings(newSettings)
     }
 
-    fun onLanguageChange(language: String) {
+    fun onLanguageChange(language: Language) {
         val newSettings = settings.value.copy(language = language)
         repository.saveSettings(newSettings)
     }

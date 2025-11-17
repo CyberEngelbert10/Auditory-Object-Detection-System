@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import com.example.auditoryobjectdetection.data.Language
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,8 +72,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
             ) {
                 Text("English")
                 RadioButton(
-                    selected = settings.language == "english",
-                    onClick = { viewModel.onLanguageChange("english") }
+                    selected = settings.language == Language.ENGLISH,
+                    onClick = { viewModel.onLanguageChange(Language.ENGLISH) }
                 )
             }
             Row(
@@ -82,8 +83,19 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
             ) {
                 Text("Nyanja")
                 RadioButton(
-                    selected = settings.language == "nyanja",
-                    onClick = { viewModel.onLanguageChange("nyanja") }
+                    selected = settings.language == Language.NYANJA,
+                    onClick = { viewModel.onLanguageChange(Language.NYANJA) }
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bemba")
+                RadioButton(
+                    selected = settings.language == Language.BEMBA,
+                    onClick = { viewModel.onLanguageChange(Language.BEMBA) }
                 )
             }
         }

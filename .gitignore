@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Ignore local generated audio resources (Bemba/Nyanja raw files)
+app/src/main/res/raw/*_bemba.m4a
+app/src/main/res/raw/*_nyanja.m4a
+
+# Ignore the unpacked/working audio directories and backups
+bemba_audio/
+bemba_audio_all/
+app/src/main/res/raw/bemba/

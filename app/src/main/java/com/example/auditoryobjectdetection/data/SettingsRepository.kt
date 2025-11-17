@@ -17,7 +17,8 @@ class SettingsRepository(context: Context) {
         val speechRate = prefs.getFloat("speech_rate", 1.0f)
         val speechPitch = prefs.getFloat("speech_pitch", 1.0f)
         val hapticsEnabled = prefs.getBoolean("haptics_enabled", true)
-        val language = prefs.getString("language", "english") ?: "english"
+        val languageStr = prefs.getString("language", null)
+        val language = Language.fromString(languageStr)
         return AppSettings(speechRate, speechPitch, hapticsEnabled, language)
     }
 
@@ -26,7 +27,7 @@ class SettingsRepository(context: Context) {
             .putFloat("speech_rate", appSettings.speechRate)
             .putFloat("speech_pitch", appSettings.speechPitch)
             .putBoolean("haptics_enabled", appSettings.hapticsEnabled)
-            .putString("language", appSettings.language)
+            .putString("language", appSettings.language.code)
             .apply()
         _settings.value = appSettings
     }

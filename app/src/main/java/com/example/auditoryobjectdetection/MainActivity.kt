@@ -54,6 +54,7 @@ import com.example.auditoryobjectdetection.ui.settings.SettingsViewModelFactory
 import com.example.auditoryobjectdetection.ui.theme.AuditoryObjectDetectionTheme
 import org.tensorflow.lite.task.vision.detector.Detection
 import java.util.Locale
+import com.example.auditoryobjectdetection.data.Language
 import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
@@ -228,7 +229,7 @@ fun CameraView(
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastSpokenTime > 3000) {
                             val detectedLabels = results.map { it.categories.first().label }.distinct()
-                            if (settings.language == "nyanja") {
+                            if (settings.language == Language.NYANJA) {
                                 // Play audio for the first detected object
                                 val firstLabel = detectedLabels.firstOrNull()?.lowercase()
                                 val audioResId = nyanjaAudioMap[firstLabel]
@@ -240,6 +241,38 @@ fun CameraView(
                                     // Fallback to TTS if no audio
                                     val speechText = "Object detected: " + detectedLabels.joinToString()
                                     tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
+                                }
+                            } else if (settings.language == Language.BEMBA) {
+                                // Bemba support: play label audio then 'detected' audio
+                                val firstLabel = detectedLabels.firstOrNull()?.lowercase(Locale.getDefault())
+                                if (!firstLabel.isNullOrEmpty()) {
+                                    val normalized = firstLabel.replace("-", "_").replace(" ", "_").replace(Regex("[^a-z0-9_]", RegexOption.IGNORE_CASE), "").lowercase(Locale.getDefault())
+                                    val resName = "${normalized}_bemba"
+                                    val audioResId = context.resources.getIdentifier(resName, "raw", context.packageName)
+                                    if (audioResId != 0) {
+                                        val mediaPlayer = MediaPlayer.create(context, audioResId)
+                                        mediaPlayer?.start()
+                                        mediaPlayer?.setOnCompletionListener {
+                                            it.release()
+                                            val detectedRes = context.resources.getIdentifier("detected_bemba", "raw", context.packageName)
+                                            if (detectedRes != 0) {
+                                                val mpDetected = MediaPlayer.create(context, detectedRes)
+                                                mpDetected?.start()
+                                                mpDetected?.setOnCompletionListener { mpDetected.release() }
+                                            }
+                                        }
+                                    } else {
+                                        // If label audio missing, try to play the 'detected' audio in bemba only, otherwise fallback
+                                        val detectedResOnly = context.resources.getIdentifier("detected_bemba", "raw", context.packageName)
+                                        if (detectedResOnly != 0) {
+                                            val mpDetected = MediaPlayer.create(context, detectedResOnly)
+                                            mpDetected?.start()
+                                            mpDetected?.setOnCompletionListener { mpDetected.release() }
+                                        } else {
+                                            val speechText = "Object detected: " + detectedLabels.joinToString()
+                                            tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
+                                        }
+                                    }
                                 }
                             } else {
                                 // English TTS
