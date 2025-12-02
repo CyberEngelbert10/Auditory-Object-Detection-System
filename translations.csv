@@ -1,0 +1,182 @@
+English,Bemba
+person,person
+bicycle,bicycle
+car,car
+motorcycle,motorcycle
+airplane,airplane
+bus,bus
+train,train
+truck,truck
+boat,boat
+traffic light,traffic_light
+fire hydrant,fire_hydrant
+street sign,street_sign
+stop sign,stop_sign
+parking meter,parking_meter
+bench,bench
+bird,bird
+cat,cat
+dog,dog
+horse,horse
+sheep,sheep
+cow,cow
+elephant,elephant
+bear,bear
+zebra,zebra
+giraffe,giraffe
+hat,hat
+backpack,backpack
+umbrella,umbrella
+shoe,shoe
+eye glasses,eye_glasses
+handbag,handbag
+tie,tie
+suitcase,suitcase
+frisbee,frisbee
+skis,skis
+snowboard,snowboard
+sports ball,sports_ball
+kite,kite
+baseball bat,baseball_bat
+baseball glove,baseball_glove
+skateboard,skateboard
+surfboard,surfboard
+tennis racket,tennis_racket
+bottle,bottle
+plate,plate
+wine glass,wine_glass
+cup,cup
+fork,fork
+knife,knife
+spoon,spoon
+bowl,bowl
+banana,banana
+apple,apple
+sandwich,sandwich
+orange,orange
+broccoli,broccoli
+carrot,carrot
+hot dog,hot_dog
+pizza,pizza
+donut,donut
+cake,cake
+chair,chair
+couch,couch
+potted plant,potted_plant
+bed,bed
+mirror,mirror
+dining table,dining_table
+window,window
+desk,desk
+toilet,toilet
+door,door
+tv,tv
+laptop,laptop
+mouse,mouse
+remote,remote
+keyboard,keyboard
+cell phone,cell_phone
+microwave,microwave
+oven,oven
+toaster,toaster
+sink,sink
+refrigerator,refrigerator
+blender,blender
+book,book
+clock,clock
+vase,vase
+scissors,scissors
+teddy bear,teddy_bear
+hair drier,hair_drier
+toothbrush,toothbrush
+hair brush,hair_brush
+banner,banner
+blanket,blanket
+branch,branch
+bridge,bridge
+building-other,building_other
+bush,bush
+cabinet,cabinet
+cage,cage
+cardboard,cardboard
+carpet,carpet
+ceiling-other,ceiling_other
+ceiling-tile,ceiling_tile
+cloth,cloth
+clothes,clothes
+clouds,clouds
+counter,counter
+cupboard,cupboard
+curtain,curtain
+desk-stuff,desk_stuff
+dirt,dirt
+door-stuff,door_stuff
+fence,fence
+floor-marble,floor_marble
+floor-other,floor_other
+floor-stone,floor_stone
+floor-tile,floor_tile
+floor-wood,floor_wood
+flower,flower
+fog,fog
+food-other,food_other
+fruit,fruit
+furniture-other,furniture_other
+grass,grass
+gravel,gravel
+ground-other,ground_other
+hill,hill
+house,house
+leaves,leaves
+light,light
+mat,mat
+metal,metal
+mirror-stuff,mirror_stuff
+moss,moss
+mountain,mountain
+mud,mud
+napkin,napkin
+net,net
+paper,paper
+pavement,pavement
+pillow,pillow
+plant-other,plant_other
+plastic,plastic
+platform,platform
+playingfield,playingfield
+railing,railing
+railroad,railroad
+river,river
+road,road
+rock,rock
+roof,roof
+rug,rug
+salad,salad
+sand,sand
+sea,sea
+shelf,shelf
+sky-other,sky_other
+skyscraper,skyscraper
+snow,snow
+solid-other,solid_other
+stairway,stairway
+straw,straw
+structural-other,structural_other
+table,table
+tent,tent
+textile-other,textile_other
+towel,towel
+tree,tree
+vegetable,vegetable
+wall-brick,wall_brick
+wall-concrete,wall_concrete
+wall-other,wall_other
+wall-panel,wall_panel
+wall-stone,wall_stone
+wall-tile,wall_tile
+wall-wood,wall_wood
+water-other,water_other
+water-drops,water_drops
+window-blind,window_blind
+window-other,window_other
+wood,wood

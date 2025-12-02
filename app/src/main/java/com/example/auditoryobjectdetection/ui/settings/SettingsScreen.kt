@@ -81,17 +81,6 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Nyanja")
-                RadioButton(
-                    selected = settings.language == Language.NYANJA,
-                    onClick = { viewModel.onLanguageChange(Language.NYANJA) }
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
                 Text("Bemba")
                 RadioButton(
                     selected = settings.language == Language.BEMBA,

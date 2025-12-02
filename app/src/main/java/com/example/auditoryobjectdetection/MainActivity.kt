@@ -17,6 +17,7 @@ import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,11 +29,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import android.graphics.Paint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -172,20 +180,16 @@ fun CameraView(
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     val vibrator = (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
 
-    // Map for Nyanja audio resources (add actual files to res/raw/nyanja/)
-    val nyanjaAudioMap = remember {
-        mapOf(
-            "person" to R.raw.nyanja_person,
-            "car" to R.raw.nyanja_car,
-            "bicycle" to R.raw.nyanja_bicycle,
-            "motorcycle" to R.raw.nyanja_motorcycle,
-            "bus" to R.raw.nyanja_bus,
-            "truck" to R.raw.nyanja_truck,
-            "chair" to R.raw.nyanja_chair,
-            "table" to R.raw.nyanja_table,
-            "obstacle" to R.raw.nyanja_obstacle
-        )
-    }
+    // State for detection results to draw bounding boxes
+    var detectionResults by remember { mutableStateOf<List<Detection>>(emptyList()) }
+    var imageWidth by remember { mutableIntStateOf(1) }
+    var imageHeight by remember { mutableIntStateOf(1) }
+
+    // Track if Bemba audio is currently playing to prevent interruption
+    var isAudioPlaying by remember { mutableStateOf(false) }
+    var currentMediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+
 
     // This is the corrected DisposableEffect block to manage the TTS engine lifecycle
     DisposableEffect(context) {
@@ -204,6 +208,8 @@ fun CameraView(
             ttsInstance.stop()
             ttsInstance.shutdown()
             analysisExecutor.shutdown()
+            // Clean up any playing MediaPlayer
+            currentMediaPlayer?.release()
         }
     }
 
@@ -224,25 +230,17 @@ fun CameraView(
                     Log.e("CameraScreen", "Detection Error: $error")
                 }
 
-                override fun onResults(results: MutableList<Detection>?, inferenceTime: Long, imageHeight: Int, imageWidth: Int) {
+                override fun onResults(results: MutableList<Detection>?, inferenceTime: Long, imgHeight: Int, imgWidth: Int) {
+                    // Update detection results for bounding box overlay
+                    detectionResults = results?.toList() ?: emptyList()
+                    imageWidth = imgWidth
+                    imageHeight = imgHeight
+
                     if (!results.isNullOrEmpty()) {
                         val currentTime = System.currentTimeMillis()
-                        if (currentTime - lastSpokenTime > 3000) {
+                        if (currentTime - lastSpokenTime > 3000 && !isAudioPlaying) {
                             val detectedLabels = results.map { it.categories.first().label }.distinct()
-                            if (settings.language == Language.NYANJA) {
-                                // Play audio for the first detected object
-                                val firstLabel = detectedLabels.firstOrNull()?.lowercase()
-                                val audioResId = nyanjaAudioMap[firstLabel]
-                                if (audioResId != null) {
-                                    val mediaPlayer = MediaPlayer.create(context, audioResId)
-                                    mediaPlayer?.start()
-                                    mediaPlayer?.setOnCompletionListener { it.release() }
-                                } else {
-                                    // Fallback to TTS if no audio
-                                    val speechText = "Object detected: " + detectedLabels.joinToString()
-                                    tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
-                                }
-                            } else if (settings.language == Language.BEMBA) {
+                            if (settings.language == Language.BEMBA) {
                                 // Bemba support: play label audio then 'detected' audio
                                 val firstLabel = detectedLabels.firstOrNull()?.lowercase(Locale.getDefault())
                                 if (!firstLabel.isNullOrEmpty()) {
@@ -250,24 +248,45 @@ fun CameraView(
                                     val resName = "${normalized}_bemba"
                                     val audioResId = context.resources.getIdentifier(resName, "raw", context.packageName)
                                     if (audioResId != 0) {
+                                        isAudioPlaying = true
+                                        // Release any existing player
+                                        currentMediaPlayer?.release()
+                                        
                                         val mediaPlayer = MediaPlayer.create(context, audioResId)
+                                        currentMediaPlayer = mediaPlayer
                                         mediaPlayer?.start()
-                                        mediaPlayer?.setOnCompletionListener {
-                                            it.release()
+                                        mediaPlayer?.setOnCompletionListener { mp ->
+                                            mp.release()
                                             val detectedRes = context.resources.getIdentifier("detected_bemba", "raw", context.packageName)
                                             if (detectedRes != 0) {
                                                 val mpDetected = MediaPlayer.create(context, detectedRes)
+                                                currentMediaPlayer = mpDetected
                                                 mpDetected?.start()
-                                                mpDetected?.setOnCompletionListener { mpDetected.release() }
+                                                mpDetected?.setOnCompletionListener { mp2 ->
+                                                    mp2.release()
+                                                    currentMediaPlayer = null
+                                                    isAudioPlaying = false
+                                                }
+                                            } else {
+                                                currentMediaPlayer = null
+                                                isAudioPlaying = false
                                             }
                                         }
                                     } else {
                                         // If label audio missing, try to play the 'detected' audio in bemba only, otherwise fallback
                                         val detectedResOnly = context.resources.getIdentifier("detected_bemba", "raw", context.packageName)
                                         if (detectedResOnly != 0) {
+                                            isAudioPlaying = true
+                                            currentMediaPlayer?.release()
+                                            
                                             val mpDetected = MediaPlayer.create(context, detectedResOnly)
+                                            currentMediaPlayer = mpDetected
                                             mpDetected?.start()
-                                            mpDetected?.setOnCompletionListener { mpDetected.release() }
+                                            mpDetected?.setOnCompletionListener { mp ->
+                                                mp.release()
+                                                currentMediaPlayer = null
+                                                isAudioPlaying = false
+                                            }
                                         } else {
                                             val speechText = "Object detected: " + detectedLabels.joinToString()
                                             tts?.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, null)
@@ -304,11 +323,101 @@ fun CameraView(
         ) {
             cameraController.bindToLifecycle(lifecycleOwner)
         }
+
+        // Detection overlay for bounding boxes, labels, and confidence scores
+        DetectionOverlay(
+            detections = detectionResults,
+            imageWidth = imageWidth,
+            imageHeight = imageHeight,
+            modifier = Modifier.fillMaxSize()
+        )
+
         FloatingActionButton(
             onClick = onNavigateToSettings,
             modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
         ) {
             Icon(Icons.Filled.Settings, contentDescription = "Settings")
+        }
+    }
+}
+
+/**
+ * Composable that draws bounding boxes, labels, and confidence scores
+ * over detected objects.
+ */
+@Composable
+fun DetectionOverlay(
+    detections: List<Detection>,
+    imageWidth: Int,
+    imageHeight: Int,
+    modifier: Modifier = Modifier
+) {
+    val boxColor = Color.Green
+    val textPaint = remember {
+        Paint().apply {
+            color = android.graphics.Color.WHITE
+            textSize = 48f
+            isFakeBoldText = true
+            setShadowLayer(4f, 2f, 2f, android.graphics.Color.BLACK)
+        }
+    }
+    val backgroundPaint = remember {
+        Paint().apply {
+            color = android.graphics.Color.argb(180, 0, 150, 0)
+            style = Paint.Style.FILL
+        }
+    }
+
+    Canvas(modifier = modifier) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+
+        // Calculate scale factors to map detection coordinates to canvas
+        val scaleX = canvasWidth / imageWidth
+        val scaleY = canvasHeight / imageHeight
+
+        detections.forEach { detection ->
+            val boundingBox = detection.boundingBox
+            val category = detection.categories.firstOrNull()
+            val label = category?.label ?: "Unknown"
+            val confidence = category?.score ?: 0f
+            val confidencePercent = (confidence * 100).toInt()
+
+            // Scale bounding box coordinates
+            val left = boundingBox.left * scaleX
+            val top = boundingBox.top * scaleY
+            val right = boundingBox.right * scaleX
+            val bottom = boundingBox.bottom * scaleY
+
+            // Draw bounding box
+            drawRect(
+                color = boxColor,
+                topLeft = Offset(left, top),
+                size = Size(right - left, bottom - top),
+                style = Stroke(width = 6f)
+            )
+
+            // Draw label with confidence score
+            val labelText = "$label $confidencePercent%"
+            val textWidth = textPaint.measureText(labelText)
+            val textHeight = textPaint.textSize
+
+            // Draw background rectangle for text
+            drawContext.canvas.nativeCanvas.drawRect(
+                left,
+                top - textHeight - 8,
+                left + textWidth + 16,
+                top,
+                backgroundPaint
+            )
+
+            // Draw text
+            drawContext.canvas.nativeCanvas.drawText(
+                labelText,
+                left + 8,
+                top - 10,
+                textPaint
+            )
         }
     }
 }
